@@ -16,13 +16,14 @@
         body {
             background-color: #0a0a0a;
             color: #0f0;
-            overflow: hidden;
-            height: 100vh;
+            min-height: 100vh;
             position: relative;
+            overflow-x: hidden;
+            padding-bottom: 20px;
         }
         
         .matrix-bg {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -35,7 +36,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            height: 100vh;
+            height: auto;
             display: flex;
             flex-direction: column;
         }
@@ -48,25 +49,30 @@
         }
         
         h1 {
-            font-size: 2.8rem;
+            font-size: 2.2rem;
             text-shadow: 0 0 10px #0f0;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             margin-bottom: 10px;
+            word-break: break-word;
         }
         
         .subtitle {
             color: #8f8;
-            font-size: 1.2rem;
+            font-size: 1rem;
+            line-height: 1.4;
+            padding: 0 10px;
         }
         
         .warning {
             background-color: rgba(255, 50, 50, 0.2);
             border: 1px solid #f00;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             margin: 15px 0;
             text-align: center;
             color: #f88;
+            font-size: 0.95rem;
+            line-height: 1.4;
         }
         
         .main-content {
@@ -84,11 +90,12 @@
             flex: 1;
             min-width: 300px;
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+            overflow: hidden;
         }
         
         .panel-title {
             color: #0f0;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             margin-bottom: 15px;
             border-bottom: 1px solid #0f0;
             padding-bottom: 5px;
@@ -104,13 +111,15 @@
             padding: 15px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
-            font-size: 1rem;
+            font-size: 0.9rem;
             line-height: 1.4;
+            -webkit-overflow-scrolling: touch;
         }
         
         .terminal-line {
             margin-bottom: 8px;
-            white-space: nowrap;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
         
         .prompt {
@@ -161,7 +170,7 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             margin-top: 20px;
             flex-wrap: wrap;
         }
@@ -170,11 +179,13 @@
             background-color: #111;
             color: #0f0;
             border: 1px solid #0f0;
-            padding: 10px 20px;
+            padding: 12px 15px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
             transition: all 0.3s;
+            min-width: 160px;
+            margin: 5px;
         }
         
         button:hover {
@@ -192,7 +203,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: rgba(10, 30, 10, 0.9);
+            background-color: rgba(10, 30, 10, 0.95);
             border: 1px solid #0f0;
             border-radius: 5px;
             padding: 15px;
@@ -224,6 +235,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            min-width: 140px;
         }
         
         .status-light {
@@ -232,6 +244,7 @@
             border-radius: 50%;
             background-color: #f00;
             box-shadow: 0 0 5px #f00;
+            flex-shrink: 0;
         }
         
         .status-light.active {
@@ -240,10 +253,12 @@
         }
         
         .hack-progress {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             text-align: center;
             margin: 20px 0;
             text-shadow: 0 0 10px #0f0;
+            word-break: break-word;
+            padding: 0 5px;
         }
         
         footer {
@@ -252,20 +267,88 @@
             border-top: 1px solid #0f0;
             margin-top: 20px;
             color: #8f8;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
         }
         
+        /* Мобильная адаптация */
         @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
+            .container {
+                padding: 15px;
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
+                letter-spacing: 1px;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .panel {
+                min-width: 100%;
+                padding: 12px;
+            }
+            
+            .terminal {
+                height: 250px;
+                font-size: 0.85rem;
+            }
+            
+            .panel-title {
+                font-size: 1.1rem;
+            }
+            
+            button {
+                min-width: calc(50% - 20px);
+                padding: 10px 12px;
+                font-size: 0.9rem;
             }
             
             .controls {
-                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .hack-progress {
+                font-size: 1.3rem;
+            }
+            
+            .status-item {
+                min-width: calc(50% - 10px);
+            }
+            
+            .notification {
+                max-width: 280px;
+                right: 10px;
+                bottom: 10px;
+                left: 10px;
+                margin: 0 auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .terminal {
+                height: 220px;
+                font-size: 0.8rem;
+                padding: 10px;
+            }
+            
+            button {
+                min-width: 100%;
+                margin: 3px 0;
+            }
+            
+            .hack-progress {
+                font-size: 1.2rem;
+            }
+            
+            .status-item {
+                min-width: 100%;
             }
         }
     </style>
