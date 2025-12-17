@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Симулятор взлома</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #0f0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #0f0;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            text-shadow: 0 0 10px #0f0;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #8f8;
+            font-size: 1.2rem;
+        }
+        
+        .warning {
+            background-color: rgba(255, 50, 50, 0.2);
+            border: 1px solid #f00;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+            color: #f88;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            flex: 1;
+        }
+        
+        .panel {
+            background-color: rgba(10, 20, 10, 0.8);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            flex: 1;
+            min-width: 300px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+        
+        .panel-title {
+            color: #0f0;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #0f0;
+            padding-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .terminal {
+            height: 300px;
+            background-color: #000;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+        
+        .terminal-line {
+            margin-bottom: 8px;
+            white-space: nowrap;
+        }
+        
+        .prompt {
+            color: #0f0;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: #0f0;
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #111;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #0f0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #0f0;
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background-color: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0f0;
+            color: #000;
+            box-shadow: 0 0 15px #0f0;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(10, 30, 10, 0.9);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            max-width: 300px;
+            transform: translateX(150%);
+            transition: transform 0.5s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-title {
+            color: #0f0;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .status-indicators {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #f00;
+            box-shadow: 0 0 5px #f00;
+        }
+        
+        .status-light.active {
+            background-color: #0f0;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .hack-progress {
+            font-size: 1.8rem;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid #0f0;
+            margin-top: 20px;
+            color: #8f8;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrix-bg"></div>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-terminal"></i> СИМУЛЯТОР ВЗЛОМА</h1>
+            <div class="subtitle">Имитация процесса несанкционированного доступа к системам (в образовательных целях)</div>
+        </header>
+        
+        <div class="warning">
+            <i class="fas fa-exclamation-triangle"></i> ВНИМАНИЕ: Это только симуляция взлома. Никакие реальные системы не подвергаются атаке.
+        </div>
+        
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-desktop"></i> ТЕРМИНАЛ ВЗЛОМЩИКА
+                </div>
+                <div class="terminal" id="terminal">
+                    <div class="terminal-line"><span class="prompt">root@hacker:~#</span> ./initiate_cyber_attack.sh</div>
+                    <div class="terminal-line">Инициализация скрипта взлома...</div>
+                    <div class="terminal-line">Поиск уязвимостей в целевой системе...</div>
+                    <div class="terminal-line">> Уязвимость CVE-2023-12345 обнаружена</div>
+                    <div class="terminal-line">> Эксплуатация уязвимости...</div>
+                    <div class="terminal-line"><span class="prompt">root@hacker:~#</span> <span id="typing-text"></span><span class="cursor"></span></div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Прогресс взлома:</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                
+                <div class="hack-progress" id="hack-progress">
+                    СИСТЕМА ЗАЩИЩЕНА
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-server"></i> ЦЕЛЕВЫЕ СИСТЕМЫ
+                </div>
+                <div class="status-indicators">
+                    <div class="status-item">
+                        <div class="status-light" id="status-1"></div>
+                        <span>Банковский сервер</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-light" id="status-2"></div>
+                        <span>Правительственный портал</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-light" id="status-3"></div>
+                        <span>Корпоративная сеть</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-light" id="status-4"></div>
+                        <span>Спутниковая система</span>
+                    </div>
+                </div>
+                
+                <div class="panel-title" style="margin-top: 25px;">
+                    <i class="fas fa-cogs"></i> ИНСТРУМЕНТЫ ВЗЛОМА
+                </div>
+                <div class="terminal" style="height: 180px;">
+                    <div class="terminal-line">> SQL-инъекция: <span class="prompt">ГОТОВ</span></div>
+                    <div class="terminal-line">> Брутфорс: <span class="prompt">ГОТОВ</span></div>
+                    <div class="terminal-line">> Фишинг: <span class="prompt">ГОТОВ</span></div>
+                    <div class="terminal-line">> Эксплойты: <span class="prompt">12/24</span></div>
+                    <div class="terminal-line">> Шифрование: <span class="prompt">AES-256</span></div>
+                    <div class="terminal-line">> Анонимизация: <span class="prompt">TOR + VPN</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn">
+                <i class="fas fa-play"></i> Начать взлом
+            </button>
+            <button id="pause-btn" disabled>
+                <i class="fas fa-pause"></i> Приостановить
+            </button>
+            <button id="reset-btn">
+                <i class="fas fa-redo"></i> Сбросить
+            </button>
+            <button id="full-hack-btn">
+                <i class="fas fa-bolt"></i> Мгновенный взлом
+            </button>
+        </div>
+        
+        <footer>
+            <div>© 2023 СИМУЛЯТОР ВЗЛОМА | Создано в образовательных целях | Никакие реальные системы не подвергаются атаке</div>
+            <div style="margin-top: 5px; font-size: 0.8rem;">Имитация процесса кибератаки для демонстрации принципов кибербезопасности</div>
+        </footer>
+    </div>
+    
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notification-title">СИСТЕМА ОБНАРУЖЕНА</div>
+        <div id="notification-text">Целевая система идентифицирована. Начато сканирование портов.</div>
+    </div>
+
+    <script>
+        // Элементы DOM
+        const terminal = document.getElementById('terminal');
+        const typingText = document.getElementById('typing-text');
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercent = document.getElementById('progress-percent');
+        const hackProgress = document.getElementById('hack-progress');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const fullHackBtn = document.getElementById('full-hack-btn');
+        const notification = document.getElementById('notification');
+        const notificationTitle = document.getElementById('notification-title');
+        const notificationText = document.getElementById('notification-text');
+        const statusLights = [
+            document.getElementById('status-1'),
+            document.getElementById('status-2'),
+            document.getElementById('status-3'),
+            document.getElementById('status-4')
+        ];
+        
+        // Переменные состояния
+        let hackProgressValue = 0;
+        let isHacking = false;
+        let isPaused = false;
+        let hackInterval;
+        let currentStep = 0;
+        
+        // Команды для симуляции в терминале
+        const hackCommands = [
+            "scan --target 192.168.1.1 --ports 1-1000",
+            "exploit --vulnerability CVE-2023-12345",
+            "bruteforce --service ssh --wordlist rockyou.txt",
+            "sqlmap --url http://target.com/login --dbs",
+            "bypass_firewall --technique fragmentation",
+            "establish_persistence --method backdoor",
+            "exfiltrate_data --type documents --encrypt aes256",
+            "cover_tracks --logs --history",
+            "maintain_access --rootkit install"
+        ];
+        
+        // Сообщения для уведомлений
+        const notifications = [
+            {title: "СИСТЕМА ОБНАРУЖЕНА", text: "Целевая система идентифицирована. Начато сканирование портов."},
+            {title: "УЯЗВИМОСТЬ НАЙДЕНА", text: "Обнаружена уязвимость CVE-2023-12345. Начинаем эксплуатацию."},
+            {title: "ДОСТУП ПОЛУЧЕН", text: "Успешный подбор учетных данных. Получен доступ к системе."},
+            {title: "ПОВЫШЕНИЕ ПРИВИЛЕГИЙ", text: "Эскалация привилегий до уровня администратора."},
+            {title: "ДАННЫЕ ЭКСФИЛЬТРИРОВАНЫ", text: "Конфиденциальные данные успешно извлечены из системы."},
+            {title: "БЭКДОР УСТАНОВЛЕН", text: "Установлено скрытое средство поддержания доступа."},
+            {title: "СЛЕДЫ УДАЛЕНЫ", text: "Все журналы и следы активности успешно удалены."},
+            {title: "МИССИЯ ВЫПОЛНЕНА", text: "Операция завершена. Система полностью скомпрометирована."}
+        ];
+        
+        // Матричный фон
+        function createMatrixBackground() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const matrixBg = document.getElementById('matrix-bg');
+            matrixBg.appendChild(canvas);
+            
+            canvas.width = matrixBg.clientWidth;
+            canvas.height = matrixBg.clientHeight;
+            
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+            
+            for(let i = 0; i < columns; i++) {
+                drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
+            }
+            
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#0f0';
+                ctx.font = `${fontSize}px 'Courier New'`;
+                
+                for(let i = 0; i < drops.length; i++) {
+                    const text = letters[Math.floor(Math.random() * letters.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(drawMatrix, 50);
+            
+            window.addEventListener('resize', () => {
+                canvas.width = matrixBg.clientWidth;
+                canvas.height = matrixBg.clientHeight;
+            });
+        }
+        
+        // Функция для добавления строк в терминал
+        function addTerminalLine(text, prompt = false) {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            
+            if(prompt) {
+                const promptSpan = document.createElement('span');
+                promptSpan.className = 'prompt';
+                promptSpan.textContent = 'root@hacker:~# ';
+                line.appendChild(promptSpan);
+            }
+            
+            line.appendChild(document.createTextNode(text));
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        // Функция для показа уведомления
+        function showNotification(title, text) {
+            notificationTitle.textContent = title;
+            notificationText.textContent = text;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Функция для обновления прогресса
+        function updateProgress(value) {
+            hackProgressValue = Math.min(100, Math.max(0, value));
+            progressFill.style.width = `${hackProgressValue}%`;
+            progressPercent.textContent = `${hackProgressValue}%`;
+            
+            // Обновление текста статуса
+            if(hackProgressValue < 25) {
+                hackProgress.textContent = "СИСТЕМА ЗАЩИЩЕНА";
+                hackProgress.style.color = "#0f0";
+            } else if(hackProgressValue < 50) {
+                hackProgress.textContent = "ОБНАРУЖЕНЫ УЯЗВИМОСТИ";
+                hackProgress.style.color = "#ff0";
+            } else if(hackProgressValue < 75) {
+                hackProgress.textContent = "ДОСТУП ПОЛУЧЕН";
+                hackProgress.style.color = "#f80";
+            } else if(hackProgressValue < 100) {
+                hackProgress.textContent = "СИСТЕМА СКОМПРОМЕТИРОВАНА";
+                hackProgress.style.color = "#f00";
+            } else {
+                hackProgress.textContent = "ВЗЛОМ ЗАВЕРШЕН";
+                hackProgress.style.color = "#f00";
+                hackProgress.style.textShadow = "0 0 10px #f00";
+            }
+            
+            // Включение индикаторов статуса
+            const activeLights = Math.floor(hackProgressValue / 25);
+            statusLights.forEach((light, index) => {
+                if(index < activeLights) {
+                    light.classList.add('active');
+                } else {
+                    light.classList.remove('active');
+                }
+            });
+            
+            // Показ уведомлений в ключевые моменты
+            if(hackProgressValue >= 12 && currentStep === 0) {
+                showNotification(notifications[0].title, notifications[0].text);
+                currentStep = 1;
+            } else if(hackProgressValue >= 25 && currentStep === 1) {
+                showNotification(notifications[1].title, notifications[1].text);
+                addTerminalLine("Уязвимость успешно эксплуатируется. Получен начальный доступ.");
+                currentStep = 2;
+            } else if(hackProgressValue >= 40 && currentStep === 2) {
+                addTerminalLine("Повышение привилегий... Успех! Получены права администратора.");
+                currentStep = 3;
+            } else if(hackProgressValue >= 60 && currentStep === 3) {
+                showNotification(notifications[4].title, notifications[4].text);
+                addTerminalLine("Начата эксфильтрация данных...");
+                currentStep = 4;
+            } else if(hackProgressValue >= 80 && currentStep === 4) {
+                showNotification(notifications[5].title, notifications[5].text);
+                addTerminalLine("Установка бэкдора для поддержания доступа...");
+                currentStep = 5;
+            } else if(hackProgressValue >= 95 && currentStep === 5) {
+                showNotification(notifications[6].title, notifications[6].text);
+                addTerminalLine("Очистка журналов и следов активности...");
+                currentStep = 6;
+            } else if(hackProgressValue >= 100 && currentStep === 6) {
+                showNotification(notifications[7].title, notifications[7].text);
+                addTerminalLine("Операция завершена. Все цели достигнуты.", true);
+                addTerminalLine("Система полностью скомпрометирована. Рекомендуется перезагрузить симуляцию.");
+                currentStep = 7;
+                stopHacking();
+            }
+        }
+        
+        // Функция для анимации набора текста
+        function typeText(text, element, speed = 50) {
+            return new Promise(resolve => {
+                let i = 0;
+                element.textContent = '';
+                
+                function typeChar() {
+                    if(i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeChar, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+                
+                typeChar();
+            });
+        }
+        
+        // Основная функция взлома
+        function startHacking() {
+            if(isHacking) return;
+            
+            isHacking = true;
+            isPaused = false;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Приостановить';
+            
+            hackInterval = setInterval(() => {
+                if(!isPaused) {
+                    // Случайное увеличение прогресса
+                    const increment = Math.random() * 3;
+                    updateProgress(hackProgressValue + increment);
+                    
+                    // Случайное добавление команд в терминал
+                    if(Math.random() > 0.7 && hackProgressValue < 100) {
+                        const randomCommand = hackCommands[Math.floor(Math.random() * hackCommands.length)];
+                        addTerminalLine(randomCommand, true);
+                        
+                        // Имитация выполнения команды
+                        setTimeout(() => {
+                            const responses = [
+                                "Успех",
+                                "Доступ разрешен",
+                                "Эксплуатация завершена",
+                                "Данные получены",
+                                "Операция выполнена"
+                            ];
+                            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                            addTerminalLine(`> ${randomResponse}`);
+                        }, 500);
+                    }
+                }
+            }, 300);
+            
+            // Начальная команда
+            addTerminalLine("Начало операции... Инициализация инструментов взлома.");
+            setTimeout(() => {
+                typeText(hackCommands[0], typingText, 80).then(() => {
+                    setTimeout(() => {
+                        addTerminalLine("> Сканирование завершено. Обнаружено 5 открытых портов.");
+                        typingText.textContent = '';
+                    }, 500);
+                });
+            }, 1000);
+        }
+        
+        // Функция паузы
+        function pauseHacking() {
+            if(!isHacking) return;
+            
+            if(isPaused) {
+                // Возобновить
+                isPaused = false;
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Приостановить';
+                addTerminalLine("Возобновление операции...");
+            } else {
+                // Приостановить
+                isPaused = true;
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i> Продолжить';
+                addTerminalLine("Операция приостановлена.");
+            }
+        }
+        
+        // Функция остановки взлома
+        function stopHacking() {
+            clearInterval(hackInterval);
+            isHacking = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Приостановить';
+        }
+        
+        // Функция сброса
+        function resetHacking() {
+            stopHacking();
+            hackProgressValue = 0;
+            currentStep = 0;
+            updateProgress(0);
+            
+            // Очистка терминала, кроме начальных строк
+            const terminalLines = terminal.querySelectorAll('.terminal-line');
+            for(let i = 3; i < terminalLines.length; i++) {
+                terminalLines[i].remove();
+            }
+            
+            typingText.textContent = '';
+            
+            // Сброс индикаторов статуса
+            statusLights.forEach(light => {
+                light.classList.remove('active');
+            });
+            
+            addTerminalLine("Симуляция сброшена. Готов к новой операции.");
+        }
+        
+        // Функция мгновенного взлома
+        function fullHack() {
+            if(isHacking) stopHacking();
+            hackProgressValue = 0;
+            currentStep = 0;
+            updateProgress(0);
+            
+            // Быстрая симуляция взлома
+            startHacking();
+            isPaused = true;
+            pauseBtn.innerHTML = '<i class="fas fa-play"></i> Продолжить';
+            
+            let rapidProgress = 0;
+            const rapidInterval = setInterval(() => {
+                rapidProgress += 10;
+                updateProgress(rapidProgress);
+                
+                if(rapidProgress >= 100) {
+                    clearInterval(rapidInterval);
+                    addTerminalLine("Быстрый взлом завершен! Все системы скомпрометированы.", true);
+                    stopHacking();
+                }
+            }, 100);
+        }
+        
+        // Инициализация
+        function init() {
+            createMatrixBackground();
+            
+            // Назначение обработчиков событий
+            startBtn.addEventListener('click', startHacking);
+            pauseBtn.addEventListener('click', pauseHacking);
+            resetBtn.addEventListener('click', resetHacking);
+            fullHackBtn.addEventListener('click', fullHack);
+            
+            // Добавление начальных строк в терминал
+            addTerminalLine("Добро пожаловать в симулятор взлома v2.1");
+            addTerminalLine("Инициализация безопасного подключения... Успешно");
+            addTerminalLine("Все инструменты загружены. Готов к операции.");
+        }
+        
+        // Запуск при загрузке страницы
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
